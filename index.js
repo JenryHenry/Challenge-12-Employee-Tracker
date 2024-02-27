@@ -1,35 +1,30 @@
 const inquirer = require("inquirer");
-const mysql = require("mysql2");
-const db = mysql.createConnection({
-  host: "localhost",
-  user: "root",
-  password: "nakkyj-kowHe8-kipb1j",
-  database: "business_db",
-});
-const department = db.query(
-  "SELECT * FROM department",
-  function (err, results) {
-    if (err) {
-      console.log(err);
-    }
-    return results;
-  }
-);
+const mysql = require("mysql2/promise");
+let db;
+// functions to store table data from database in variables
+const getDepartments = async function () {
+  const [results] = await db.query("SELECT * FROM department");
 
-const role = db.query("SELECT * FROM role", function (err, results) {
-  if (err) {
-    console.log(err);
-  }
   return results;
-});
+};
 
-const employee = db.query("SELECT * FROM employee", function (err, results) {
-  if (err) {
-    console.log(err);
-  }
+const getRoles = async function () {
+  const [results] = await db.query("SELECT * FROM role");
   return results;
-});
+};
 
+const getEmployees = async function () {
+  const [results] = await db.query("SELECT * FROM employee");
+  return results;
+};
+// const employee = db.query("SELECT * FROM employee", function (err, results) {
+//   if (err) {
+//     console.log(err);
+//   }
+//   return results;
+// });
+
+// questions for inquirer
 const promptQuestions = [
   {
     type: "input",
@@ -46,12 +41,12 @@ const promptQuestions = [
     message: "What is the salary of this role?",
     name: "roleSalary",
   },
-  {
-    type: "list",
-    message: "Which department does this role belong to?",
-    name: "roleDep",
-    choices: department,
-  },
+  //   {
+  //     type: "list",
+  //     message: "Which department does this role belong to?",
+  //     name: "roleDep",
+  //     choices: department(),
+  //   },
   {
     type: "input",
     message: "What is the first name of the new employee?",
@@ -62,41 +57,43 @@ const promptQuestions = [
     message: "What is the last name of the new employee?",
     name: "lastName",
   },
-  {
-    type: "list",
-    message: "What is the new employee's role?",
-    name: "empRole",
-    choices: role,
-  },
-  {
-    type: "list",
-    message: "Who is the employee's manager?",
-    name: "manager",
-    choices: [employee, null],
-  },
+  //   {
+  //     type: "list",
+  //     message: "What is the new employee's role?",
+  //     name: "empRole",
+  //     choices: role(),
+  //   },
+  //   {
+  //     type: "list",
+  //     message: "Who is the employee's manager?",
+  //     name: "manager",
+  //     choices: [employee, null],
+  //   },
 ];
 
-function showDepartments() {
-  console.log(department);
+async function showDepartments() {
+  const deptData = await getDepartments();
+  console.table(deptData);
+  mainMenu();
 }
-function showRoles() {
+async function showRoles() {
   //retrieve roles table from database and return it
-  console.log(role);
+  const roleData = await getRoles();
+  console.table(roleData);
+  mainMenu();
 }
-function showEmployees() {
+async function showEmployees() {
   //retrieve employees table from database and return it.
-  console.log(employee);
+  const empData = await getEmployees();
+  console.table(empData);
+  mainMenu();
 }
-function promptForDepartment() {
+async function promptForDepartment() {
   // inquirer.prompt()
-  inquirer.prompt(promptQuestions[0]).then((response) => {
-    db.query(
-      `INSERT INTO department (name) VALUES (${response})`,
-      function (err, results) {
-        console.log("Success!" + results);
-      }
-    );
-  });
+  const response = await inquirer.prompt(promptQuestions[0]);
+  await db.query("INSERT INTO department (name) VALUES (?)", response.depName);
+  console.log("Success!");
+  await showDepartments();
 }
 // promptForRole(){};
 // promptForEmployee(){};
@@ -117,27 +114,34 @@ const question = {
   ],
 };
 
-function init() {
-  inquirer.prompt(question).then((response) => {
-    const goal = response.goal;
-    if (goal == "view all departments") {
-      showDepartments();
-    } else if (goal == "view all roles") {
-      showRoles();
-    } else if (goal == "view all employees") {
-      showEmployees();
-    } else if (goal == "add a department") {
-      promptForDepartment();
-    } else if (goal == "add a role") {
-      promptForRole();
-    } else if (goal == "add an employee") {
-      promptForEmployee();
-    } else if (goal == "update an employee role") {
-      promptForEmployeeAndRole();
-    }
+async function init() {
+  db = await mysql.createConnection({
+    host: "localhost",
+    user: "root",
+    password: "nakkyj-kowHe8-kipb1j",
+    database: "business_db",
   });
+  mainMenu();
 }
-
+async function mainMenu() {
+  const response = await inquirer.prompt(question);
+  const goal = response.goal;
+  if (goal == "view all departments") {
+    await showDepartments();
+  } else if (goal == "view all roles") {
+    showRoles();
+  } else if (goal == "view all employees") {
+    showEmployees();
+  } else if (goal == "add a department") {
+    await promptForDepartment();
+  } else if (goal == "add a role") {
+    promptForRole();
+  } else if (goal == "add an employee") {
+    promptForEmployee();
+  } else if (goal == "update an employee role") {
+    promptForEmployeeAndRole();
+  }
+}
 init();
 // PSEUDOCODE:
 // NEED TO RUN NPM START AND HAVE PROGRAM RUN INDEX.JS
