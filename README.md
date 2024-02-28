@@ -18,7 +18,7 @@ To use this application:
 - Answer the prompts, if any, to make changes to your database.
 
 This is how the application should run:
-(https://github.com/JenryHenry/Challenge-12-Employee-Tracker)
+(https://drive.google.com/file/d/19tCazjtlYJ-olJ8P15QFNpQJ-ZD2L2MT/view)
 
 ## License
 Please refer to the license in the repo.
