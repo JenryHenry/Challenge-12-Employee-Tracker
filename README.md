@@ -17,6 +17,9 @@ To use this application:
 - Navigate through the options using the arrow keys on your keyboard, and press ENTER on the option you want.
 - Answer the prompts, if any, to make changes to your database.
 
+This is how the application should run:
+(https://github.com/JenryHenry/Challenge-12-Employee-Tracker)
+
 ## License
 Please refer to the license in the repo.
 
