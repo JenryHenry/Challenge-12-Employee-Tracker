@@ -17,14 +17,8 @@ const getEmployees = async function () {
   const [results] = await db.query("SELECT * FROM employee");
   return results;
 };
-// const employee = db.query("SELECT * FROM employee", function (err, results) {
-//   if (err) {
-//     console.log(err);
-//   }
-//   return results;
-// });
 
-// questions for inquirer
+// store question for adding department
 const depQuestions = [
   {
     type: "input",
@@ -32,7 +26,23 @@ const depQuestions = [
     name: "depName",
   },
 ];
+// store question for user goal
+const question = {
+  type: "list",
+  message: "What do you want to do?",
+  name: "goal",
+  choices: [
+    "view all departments",
+    "view all roles",
+    "view all employees",
+    "add a department",
+    "add a role",
+    "add an employee",
+    "update an employee role",
+  ],
+};
 
+// functions to display departments, roles, and employees
 async function showDepartments() {
   const deptData = await getDepartments();
   console.table(deptData);
@@ -50,6 +60,8 @@ async function showEmployees() {
   console.table(empData);
   mainMenu();
 }
+
+// functions to prompt user based on their desired goal
 async function promptForDepartment() {
   // inquirer.prompt()
   const response = await inquirer.prompt(depQuestions);
@@ -165,21 +177,6 @@ async function promptForEmployeeAndRole() {
   console.log("Success!");
   await showEmployees();
 }
-
-const question = {
-  type: "list",
-  message: "What do you want to do?",
-  name: "goal",
-  choices: [
-    "view all departments",
-    "view all roles",
-    "view all employees",
-    "add a department",
-    "add a role",
-    "add an employee",
-    "update an employee role",
-  ],
-};
 
 async function init() {
   db = await mysql.createConnection({
