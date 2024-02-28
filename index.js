@@ -31,44 +31,6 @@ const promptQuestions = [
     message: "What is the name of the new department?",
     name: "depName",
   },
-  {
-    type: "input",
-    message: "What is the name of the new role?",
-    name: "roleName",
-  },
-  {
-    type: "input",
-    message: "What is the salary of this role?",
-    name: "roleSalary",
-  },
-  //   {
-  //     type: "list",
-  //     message: "Which department does this role belong to?",
-  //     name: "roleDep",
-  //     choices: department(),
-  //   },
-  {
-    type: "input",
-    message: "What is the first name of the new employee?",
-    name: "firstName",
-  },
-  {
-    type: "input",
-    message: "What is the last name of the new employee?",
-    name: "lastName",
-  },
-  //   {
-  //     type: "list",
-  //     message: "What is the new employee's role?",
-  //     name: "empRole",
-  //     choices: role(),
-  //   },
-  //   {
-  //     type: "list",
-  //     message: "Who is the employee's manager?",
-  //     name: "manager",
-  //     choices: [employee, null],
-  //   },
 ];
 
 async function showDepartments() {
@@ -95,8 +57,81 @@ async function promptForDepartment() {
   console.log("Success!");
   await showDepartments();
 }
-// promptForRole(){};
-// promptForEmployee(){};
+async function promptForRole() {
+  const roleQuestions = [
+    {
+      type: "input",
+      message: "What is the name of the new role?",
+      name: "roleName",
+    },
+    {
+      type: "input",
+      message: "What is the salary of this role?",
+      name: "roleSalary",
+    },
+    {
+      type: "list",
+      message: "Which department does this role belong to?",
+      name: "roleDep",
+      choices: (await getDepartments()).map((dep) => {
+        return {
+          name: dep.name,
+          value: dep.id,
+        };
+      }),
+    },
+  ];
+  const response = await inquirer.prompt(roleQuestions);
+  await db.query(
+    `INSERT INTO role (title, department, salary) VALUES (?, ?, ?)`,
+    [response.roleName, response.roleDep, response.roleSalary]
+  );
+  console.log("Success!");
+  await showRoles();
+}
+async function promptForEmployee() {
+  const employeeQuestions = [
+    {
+      type: "input",
+      message: "What is the first name of the new employee?",
+      name: "firstName",
+    },
+    {
+      type: "input",
+      message: "What is the last name of the new employee?",
+      name: "lastName",
+    },
+    {
+      type: "list",
+      message: "What is the new employee's role?",
+      name: "empRole",
+      choices: (await getRoles()).map((roles) => {
+        return {
+          name: roles.title,
+          value: roles.id,
+        };
+      }),
+    },
+    {
+      type: "list",
+      message: "Who is the employee's manager?",
+      name: "manager",
+      choices: (await getEmployees()).map((employees) => {
+        return {
+          name: employees.first_name + employees.last_name,
+          value: employees.id,
+        };
+      }),
+    },
+  ];
+  const response = await inquirer.prompt(employeeQuestions);
+  await db.query(
+    `INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)`,
+    [response.firstName, response.lastName, response.empRole, response.manager]
+  );
+  console.log("Success!");
+  await showEmployees();
+}
 // promptForEmployeeAndRole(){};
 
 const question = {
