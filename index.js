@@ -25,7 +25,7 @@ const getEmployees = async function () {
 // });
 
 // questions for inquirer
-const promptQuestions = [
+const depQuestions = [
   {
     type: "input",
     message: "What is the name of the new department?",
@@ -52,7 +52,7 @@ async function showEmployees() {
 }
 async function promptForDepartment() {
   // inquirer.prompt()
-  const response = await inquirer.prompt(promptQuestions[0]);
+  const response = await inquirer.prompt(depQuestions);
   await db.query("INSERT INTO department (name) VALUES (?)", response.depName);
   console.log("Success!");
   await showDepartments();
@@ -118,7 +118,7 @@ async function promptForEmployee() {
       name: "manager",
       choices: (await getEmployees()).map((employees) => {
         return {
-          name: employees.first_name + employees.last_name,
+          name: employees.first_name + " " + employees.last_name,
           value: employees.id,
         };
       }),
@@ -132,7 +132,39 @@ async function promptForEmployee() {
   console.log("Success!");
   await showEmployees();
 }
-// promptForEmployeeAndRole(){};
+async function promptForEmployeeAndRole() {
+  const questions = [
+    {
+      type: "list",
+      message: "Which employee would you like to update?",
+      name: "emp",
+      choices: (await getEmployees()).map((employees) => {
+        return {
+          name: employees.first_name + " " + employees.last_name,
+          value: employees.id,
+        };
+      }),
+    },
+    {
+      type: "list",
+      message: "What is the employee's new role?",
+      name: "empRole",
+      choices: (await getRoles()).map((roles) => {
+        return {
+          name: roles.title,
+          value: roles.id,
+        };
+      }),
+    },
+  ];
+  const response = await inquirer.prompt(questions);
+  await db.query("UPDATE employee SET role_id = (?) WHERE id = (?)", [
+    response.empRole,
+    response.emp,
+  ]);
+  console.log("Success!");
+  await showEmployees();
+}
 
 const question = {
   type: "list",
